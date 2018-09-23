@@ -4,7 +4,6 @@
 
 import itertools
 import random
-import string
 
 from data import DICTIONARY, LETTER_SCORES, POUCH
 
@@ -14,23 +13,36 @@ NUM_LETTERS = 7
 def draw_letters():
     """Pick NUM_LETTERS letters randomly. Hint: use stdlib random"""
 
-    return [random.choice(POUCH) for _ in range(NUM_LETTERS)]
+    return random.sample(POUCH, NUM_LETTERS)
 
 def input_word(draw):
     """Ask player for a word and validate against draw.
     Use _validation(word, draw) helper."""
 
-    word = input("Form a valid word: ")
-    _validation(word, draw)
-    return word
+    while True:
+        word = input("Form a valid word: ")
+
+        try:
+            return _validation(word, draw)
+        except ValueError as err:
+            print(err)
+
 
 
 def _validation(word, draw):
     """Validations: 1) only use letters of draw, 2) valid dictionary word"""
-    word_in_draw = [False for i in word if i not in draw]
-    word_in_dict = word in DICTIONARY
 
-    return word_in_draw and word_in_dict
+    #raise error if word uses an invalid letter
+    for letter in word.upper():
+        if letter not in draw:
+            raise ValueError("{} is not in the drawn words".format(letter))
+
+    if not set(word.lower()) & set(DICTIONARY):
+        raise ValueError("{} not in dictionary".format(word))
+
+    return word
+
+
 
 
 
@@ -47,23 +59,15 @@ def calc_word_value(word):
 def get_possible_dict_words(draw):
     """Get all possible words from draw which are valid dictionary words.
     Use the _get_permutations_draw helper and DICTIONARY constant"""
-    arr = _get_permutations_draw(draw)
-    result = [i for i in arr if i in DICTIONARY]
-    return result
+    perm = ["".join(i).lower() for i in _get_permutations_draw(draw)]
+    return set(perm) & set(DICTIONARY)
 
 
 def _get_permutations_draw(draw):
     """Helper for get_possible_dict_words to get all permutations of draw letters.
     Hint: use itertools.permutations"""
-    draw = "".join(draw)
-    draw = draw.lower()
-    arr = []
-    for i in range(len(draw)):
-        for j in list(itertools.permutations(draw, i)):
-            arr.append("".join(j))
-
-    return arr
-
+    for i in range(1,8):
+        yield from list(itertools.permutations(draw,i))
 
 
 # From challenge 01:
